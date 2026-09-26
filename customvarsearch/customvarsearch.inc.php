@@ -27,7 +27,9 @@
  *
  * @package   customvarsearch
  * @version   1.2.0
- * @author    jseldon
+ * @author    James Seldon
+ * @copyright 2026 James Seldon
+ * @license   MIT (see LICENSE)
  * @requires  Nagios XI with NDO (tested on XI 2026R2, PHP 8.3, MariaDB)
  */
 
@@ -90,7 +92,9 @@ function customvarsearch_component_init()
     $args = array(
         COMPONENT_NAME        => $customvarsearch_component_name,
         COMPONENT_TYPE        => COMPONENT_TYPE_USER,
-        COMPONENT_AUTHOR      => "jseldon",
+        COMPONENT_AUTHOR      => "James Seldon",
+        COMPONENT_COPYRIGHT   => "Copyright (c) 2026 James Seldon",
+        COMPONENT_LICENSE     => "MIT",
         COMPONENT_DESCRIPTION => _("Search hosts by the names and values of their custom variables, from a dedicated page or XI's global search box."),
         COMPONENT_TITLE       => _("Custom Variable Search"),
         COMPONENT_VERSION     => "1.2.0",

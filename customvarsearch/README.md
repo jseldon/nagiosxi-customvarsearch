@@ -4,7 +4,7 @@ Find hosts by their **custom variables** – `_SERIAL`, `_OWNER`, `_LOCATION`, `
 `_RACK`, or anything else you track – from a dedicated search page or straight from XI's
 global search box. XI's built-in search only covers host and service names.
 
-**Version:** 1.2.0 · **Tested on:** Nagios XI 2026R2 (Ubuntu 24.04, PHP 8.3, MariaDB),
+**Version:** 1.2.0 · **Author:** James Seldon · **License:** MIT · **Tested on:** Nagios XI 2026R2 (Ubuntu 24.04, PHP 8.3, MariaDB),
 Neptune and classic themes
 
 ## Features
@@ -133,3 +133,8 @@ results into XI's `suggest.php` responses.
 ## Changelog
 
 See [CHANGES.txt](CHANGES.txt).
+
+## License
+
+MIT License – Copyright (c) 2026 James Seldon. Free to use, modify and redistribute;
+keep the copyright notice. See [LICENSE](LICENSE).

@@ -22,7 +22,9 @@
  *
  * Sensitive values are masked in every format (see CUSTOMVARSEARCH_SENSITIVE_NAMES).
  *
- * @package customvarsearch
+ * @package   customvarsearch
+ * @copyright 2026 James Seldon
+ * @license   MIT (see LICENSE)
  */
 
 require_once(dirname(__FILE__) . '/../../common.inc.php');

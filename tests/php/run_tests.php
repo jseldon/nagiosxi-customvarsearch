@@ -46,6 +46,8 @@ test('registers component, menu and page-head callbacks', function () {
     eq('component', $reg[0][0]);
     eq('customvarsearch', $reg[0][1]);
     eq(COMPONENT_TYPE_USER, $reg[0][2][COMPONENT_TYPE]);
+    eq('James Seldon', $reg[0][2][COMPONENT_AUTHOR]);
+    eq('MIT', $reg[0][2][COMPONENT_LICENSE]);
     ok(in_array(array('callback', CALLBACK_MENUS_INITIALIZED, 'customvarsearch_component_addmenu'), $reg, true), 'menu callback');
     ok(in_array(array('callback', CALLBACK_PAGE_HEAD, 'customvarsearch_component_head'), $reg, true), 'page head callback');
 });

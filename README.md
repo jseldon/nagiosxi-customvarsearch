@@ -87,6 +87,10 @@ XI_URL=http://localhost:8080 XI_KEY=<your api key> ./seed-demo-hosts.sh
 Playwright scripts that produced the screenshots and `demo/customvarsearch-demo.webm`;
 `demo/xi.py` holds shared helpers and `demo/install.py` uploads the zip.
 
+## License
+
+[MIT](LICENSE) – Copyright (c) 2026 James Seldon.
+
 ## Demo results
 
 | Search | Result |

@@ -33,6 +33,8 @@
  *   data-cvs-tab-param  query parameter that asks for that tab ("cvstab")
  *
  * No dependencies; plain ES5 plus fetch/Promise/URL, which every browser XI supports has.
+ *
+ * Copyright (c) 2026 James Seldon - MIT License (see LICENSE)
  */
 (function () {
     'use strict';

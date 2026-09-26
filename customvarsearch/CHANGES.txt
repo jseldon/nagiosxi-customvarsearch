@@ -21,6 +21,7 @@ Custom Variable Search - Nagios XI component
 - Fix: case-insensitive matching of non-ASCII text (e.g. "münchen" finds "MÜNCHEN")
 - Fix: invalid UTF-8 in a custom variable made JSON output empty
 - Full code documentation; PHP, JavaScript and live-XI test suites
+- Released under the MIT License
 
 1.1.0 - 09/26/2026
 ------------------

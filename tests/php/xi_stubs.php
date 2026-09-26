@@ -15,6 +15,8 @@ define("COMPONENT_VERSION", "version");
 define("COMPONENT_AUTHOR", "author");
 define("COMPONENT_DESCRIPTION", "description");
 define("COMPONENT_DATE", "date");
+define("COMPONENT_COPYRIGHT", "copyright");
+define("COMPONENT_LICENSE", "license");
 define("CALLBACK_MENUS_INITIALIZED", "menus_initialized");
 define("CALLBACK_PAGE_HEAD", "page_head");
 define("MENU_HOME", "home");
