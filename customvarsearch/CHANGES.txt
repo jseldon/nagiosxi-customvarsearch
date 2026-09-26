@@ -22,6 +22,7 @@ Custom Variable Search - Nagios XI component
 - Fix: invalid UTF-8 in a custom variable made JSON output empty
 - Full code documentation; PHP, JavaScript and live-XI test suites
 - Released under the MIT License
+- Requires Nagios XI 2026R2 or later (stays inactive on older versions)
 
 1.1.0 - 09/26/2026
 ------------------

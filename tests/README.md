@@ -4,7 +4,7 @@ Three suites, from fastest to most complete:
 
 | Suite | Needs | What it covers |
 |---|---|---|
-| `php/run_tests.php` | PHP 8 CLI | Search logic against a fake database: SQL building and escaping, permission filtering, secret masking, input limits, regex validation, highlighting/HTML escaping, CSV formula neutralising, suggest results, UTF-8 handling (30 tests) |
+| `php/run_tests.php` | PHP 8 CLI | Search logic against a fake database: SQL building and escaping, permission filtering, secret masking, input limits, regex validation, highlighting/HTML escaping, CSV formula neutralising, suggest results, UTF-8 handling, minimum XI version (31 tests) |
 | `js/test_search_hook.py` | Python 3, Playwright, Chromium | `search-hook.js` in a real browser against a mocked server: result merging, event handling, jQuery compatibility, failure fallbacks, what is *not* intercepted, abort, XHR reuse, frame→top injection, opening the Custom Variables tab (19 tests) |
 | `integration/test_live_xi.py` | A running Nagios XI with the component and test data | End-to-end through XI: access control, admin vs limited user, all match modes, template inheritance, non-ASCII, SQL injection, XSS, secrets, CSV, headers, Neptune Ctrl+K and classic navbar clicks, 10 concurrent sessions (20 tests) |
 

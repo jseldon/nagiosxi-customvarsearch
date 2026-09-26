@@ -48,8 +48,17 @@ test('registers component, menu and page-head callbacks', function () {
     eq(COMPONENT_TYPE_USER, $reg[0][2][COMPONENT_TYPE]);
     eq('James Seldon', $reg[0][2][COMPONENT_AUTHOR]);
     eq('MIT', $reg[0][2][COMPONENT_LICENSE]);
+    eq(90000, $reg[0][2][COMPONENT_REQUIRES_VERSION], 'requires 2026R2');
     ok(in_array(array('callback', CALLBACK_MENUS_INITIALIZED, 'customvarsearch_component_addmenu'), $reg, true), 'menu callback');
     ok(in_array(array('callback', CALLBACK_PAGE_HEAD, 'customvarsearch_component_head'), $reg, true), 'page head callback');
+});
+
+test('on XI older than 2026R2 the component registers but adds no hooks', function () {
+    $GLOBALS['cvs_test']['registered'] = array();
+    $GLOBALS['cvs_test']['xi_release'] = 80000;
+    customvarsearch_component_init();
+    $GLOBALS['cvs_test']['xi_release'] = 90000;
+    eq(array('component'), array_column($GLOBALS['cvs_test']['registered'], 0));
 });
 
 test('menu item goes after Host Status and links to the search page', function () {

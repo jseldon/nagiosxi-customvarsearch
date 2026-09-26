@@ -30,10 +30,13 @@
  * @author    James Seldon
  * @copyright 2026 James Seldon
  * @license   MIT (see LICENSE)
- * @requires  Nagios XI with NDO (tested on XI 2026R2, PHP 8.3, MariaDB)
+ * @requires  Nagios XI 2026R2 or later (tested on 2026R2, PHP 8.3, MariaDB)
  */
 
 include_once(dirname(__FILE__) . '/../componenthelper.inc.php');
+
+/** Oldest supported Nagios XI, as its numeric release (/usr/local/nagiosxi/var/xiversion): 2026R2 */
+define("CUSTOMVARSEARCH_MIN_XI_RELEASE", 90000);
 
 /** Longest search term / host filter accepted, in bytes (bounds regex cost on the database). */
 define("CUSTOMVARSEARCH_MAX_TERM_LENGTH", 255);
@@ -81,7 +84,9 @@ customvarsearch_component_init();
 /**
  * Register the component with XI and hook the menu and page-head callbacks.
  *
- * Called once per request when XI loads its components.
+ * Called once per request when XI loads its components. register_component() returns
+ * false when XI is older than COMPONENT_REQUIRES_VERSION (but still lists the
+ * component); in that case no menu entry or search hook is added.
  *
  * @return void
  */
@@ -99,9 +104,12 @@ function customvarsearch_component_init()
         COMPONENT_TITLE       => _("Custom Variable Search"),
         COMPONENT_VERSION     => "1.2.0",
         COMPONENT_DATE        => "09/26/2026",
+        COMPONENT_REQUIRES_VERSION => CUSTOMVARSEARCH_MIN_XI_RELEASE,
     );
 
-    register_component($customvarsearch_component_name, $args);
+    if (!register_component($customvarsearch_component_name, $args)) {
+        return;
+    }
     register_callback(CALLBACK_MENUS_INITIALIZED, 'customvarsearch_component_addmenu');
     register_callback(CALLBACK_PAGE_HEAD, 'customvarsearch_component_head');
 }

@@ -30,8 +30,8 @@ component. Release notes: [`customvarsearch/CHANGES.txt`](customvarsearch/CHANGE
 Download [`customvarsearch.zip`](customvarsearch.zip), then in Nagios XI:
 *Admin → Manage Components → Upload a Component*.
 
-Tested on **Nagios XI 2026R2** / Ubuntu 24.04 / PHP 8.3 / MariaDB, Neptune and classic
-(Modern) themes.
+Requires **Nagios XI 2026R2** or later. Tested on 2026R2 / Ubuntu 24.04 / PHP 8.3 /
+MariaDB, Neptune and classic (Modern) themes.
 
 ## Repository layout
 
@@ -53,7 +53,7 @@ python3 -c "import shutil; shutil.make_archive('customvarsearch', 'zip', '.', 'c
 ## Tests
 
 ```bash
-php tests/php/run_tests.php                      # 30 PHP unit tests
+php tests/php/run_tests.php                      # 31 PHP unit tests
 python3 tests/js/test_search_hook.py             # 19 browser tests of search-hook.js
 XI_URL=... XI_ADMIN_PASS=... XI_VIEWER_PASS=... XI_CLASSIC_PASS=... \
     python3 tests/integration/test_live_xi.py    # 20 end-to-end tests on a live XI

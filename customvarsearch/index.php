@@ -37,6 +37,13 @@ grab_request_vars();
 check_prereqs();
 check_authentication(false);
 
+if (get_product_release() < CUSTOMVARSEARCH_MIN_XI_RELEASE) {
+    do_page_start(array("page_title" => _("Custom Variable Search")), true);
+    echo '<div class="alert alert-danger">' . _("Custom Variable Search requires Nagios XI 2026R2 or later.") . '</div>';
+    do_page_end(true);
+    exit();
+}
+
 
 $format = customvarsearch_request_str("format", "html");
 

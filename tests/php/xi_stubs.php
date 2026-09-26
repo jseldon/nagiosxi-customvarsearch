@@ -17,6 +17,7 @@ define("COMPONENT_DESCRIPTION", "description");
 define("COMPONENT_DATE", "date");
 define("COMPONENT_COPYRIGHT", "copyright");
 define("COMPONENT_LICENSE", "license");
+define("COMPONENT_REQUIRES_VERSION", "requires_version");
 define("CALLBACK_MENUS_INITIALIZED", "menus_initialized");
 define("CALLBACK_PAGE_HEAD", "page_head");
 define("MENU_HOME", "home");
@@ -38,11 +39,19 @@ $GLOBALS['cvs_test'] = array(
     'rows'       => array(),   // rows the fake database returns
     'db_error'   => false,     // true: exec_sql_query throws like PHP 8 mysqli
     'authorized' => null,      // null = all objects allowed, else list of object_ids
+    'xi_release' => 90000,     // simulated get_product_release()
 );
 
 // gettext provides _() when installed (as on XI); untranslated it returns the input
 if (!function_exists("_")) { function _($s) { return $s; } }
-function register_component($name, $args) { $GLOBALS['cvs_test']['registered'][] = array('component', $name, $args); }
+// Like XI: returns false when the component needs a newer release
+function register_component($name, $args)
+{
+    $GLOBALS['cvs_test']['registered'][] = array('component', $name, $args);
+    $req = isset($args[COMPONENT_REQUIRES_VERSION]) ? $args[COMPONENT_REQUIRES_VERSION] : 0;
+    return !($req > get_product_release());
+}
+function get_product_release() { return $GLOBALS['cvs_test']['xi_release']; }
 function register_callback($cb, $fn) { $GLOBALS['cvs_test']['registered'][] = array('callback', $cb, $fn); }
 function find_menu_item($menu, $id, $key) { return array('order' => 10); }
 function add_menu_item($menu, $item) { $GLOBALS['cvs_test']['menu'][] = $item; }
