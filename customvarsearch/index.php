@@ -1,32 +1,55 @@
 <?php
-//
-// Custom Variable Search - search page (HTML, plus ?format=json / ?format=csv)
-//
+/**
+ * Custom Variable Search - search page and data endpoints.
+ *
+ * URL: /nagiosxi/includes/components/customvarsearch/index.php
+ * Requires a logged-in XI session (unauthenticated requests are refused by XI).
+ *
+ * Request parameters (GET or POST):
+ *   q       Text to search for; a regular expression when match=regex
+ *   field   Where to look: both (default) | name | value
+ *   match   How to match: contains (default) | exact | regex
+ *   host    Optional host-name substring filter
+ *   format  html (default) | json | csv | suggest
+ *   term    (format=suggest only) text typed into XI's global search box
+ *
+ * Formats:
+ *   html     The search form and a results table (matches highlighted, host links)
+ *   json     {"query": {...}, "count": n, "error": string|null, "results": [...]}
+ *            with the result fields documented at customvarsearch_search()
+ *   csv      Download: host_name, alias, address, state, variable, value
+ *   suggest  JSON list for search-hook.js, see customvarsearch_suggest_items()
+ *
+ * Sensitive values are masked in every format (see CUSTOMVARSEARCH_SENSITIVE_NAMES).
+ *
+ * @package customvarsearch
+ */
 
 require_once(dirname(__FILE__) . '/../../common.inc.php');
 require_once(dirname(__FILE__) . '/customvarsearch.inc.php');
 
-// Initialization stuff
+// Standard XI page bootstrap: session, request vars, prerequisites, login check
 pre_init();
 init_session();
-
-// Grab GET or POST variables and check prereqs and authentication
 grab_request_vars();
 check_prereqs();
 check_authentication(false);
 
 
-// Global search box integration (see search-hook.js) - same shape as XI's suggest.php
-if (grab_request_var("format", "") == "suggest") {
-    customvarsearch_suggest(trim(grab_request_var("term", "")));
+$format = customvarsearch_request_str("format", "html");
+
+// Global search box integration (called by search-hook.js) - same shape as XI's suggest.php
+if ($format == "suggest") {
+    header("Content-Type: application/json");
+    header("X-Content-Type-Options: nosniff");
+    echo json_encode(customvarsearch_suggest_items(customvarsearch_request_str("term")), CUSTOMVARSEARCH_JSON_FLAGS);
     exit();
 }
 
-$term = trim(grab_request_var("q", ""));
-$field = grab_request_var("field", "both");
-$match = grab_request_var("match", "contains");
-$hostfilter = trim(grab_request_var("host", ""));
-$format = grab_request_var("format", "html");
+$term = customvarsearch_request_str("q");
+$field = customvarsearch_request_str("field", "both");
+$match = customvarsearch_request_str("match", "contains");
+$hostfilter = customvarsearch_request_str("host");
 $searched = ($term !== '' || $hostfilter !== '');
 
 $search = $searched ? customvarsearch_search($term, $field, $match, $hostfilter) : array('results' => array(), 'error' => null);
@@ -34,21 +57,23 @@ $search = $searched ? customvarsearch_search($term, $field, $match, $hostfilter)
 switch ($format) {
     case 'json':
         header("Content-Type: application/json");
+        header("X-Content-Type-Options: nosniff");
         echo json_encode(array(
             'query'   => array('q' => $term, 'field' => $field, 'match' => $match, 'host' => $hostfilter),
             'count'   => count($search['results']),
             'error'   => $search['error'],
             'results' => $search['results'],
-        ), JSON_PRETTY_PRINT);
+        ), JSON_PRETTY_PRINT | CUSTOMVARSEARCH_JSON_FLAGS);
         exit();
 
     case 'csv':
-        header("Content-Type: text/csv");
+        header("Content-Type: text/csv; charset=UTF-8");
+        header("X-Content-Type-Options: nosniff");
         header("Content-Disposition: attachment; filename=\"customvar-search.csv\"");
         $fh = fopen("php://output", "w");
         fputcsv($fh, array('host_name', 'alias', 'address', 'state', 'variable', 'value'));
         foreach ($search['results'] as $r) {
-            fputcsv($fh, array($r['host_name'], $r['alias'], $r['address'], $r['state'], $r['varname'], $r['varvalue']));
+            fputcsv($fh, array_map('customvarsearch_csv_cell', array($r['host_name'], $r['alias'], $r['address'], $r['state'], $r['varname'], $r['varvalue'])));
         }
         fclose($fh);
         exit();
@@ -57,71 +82,22 @@ switch ($format) {
 customvarsearch_show_page($term, $field, $match, $hostfilter, $searched, $search);
 
 
-function customvarsearch_suggest($term)
-{
-    $max = 10;
-    $items = array();
-
-    if (strlen($term) >= 2) {
-        $search = customvarsearch_search($term);
-        $base = get_base_url(false);
-        foreach (array_slice($search['results'], 0, $max) as $r) {
-            $items[] = array(
-                'url'      => $base . "includes/components/xicore/status.php?show=hostdetail&host=" . urlencode($r['host_name']),
-                // Neptune's command palette filters on 'value', so it must contain the term
-                'value'    => $r['host_name'] . " _" . $r['varname'] . " " . $r['varvalue'],
-                'label'    => $r['host_name'] . " \xE2\x80\x94 _" . $r['varname'] . " = " . $r['varvalue'],
-                'category' => _("Custom Variables"),
-            );
-        }
-        if (count($search['results']) > 0) {
-            $items[] = array(
-                'url'      => $base . "includes/components/customvarsearch/index.php?q=" . urlencode($term),
-                'value'    => $term . " custom variable search",
-                'label'    => sprintf(_("See all %d custom variable matches for \"%s\""), count($search['results']), $term),
-                'category' => _("Custom Variables"),
-            );
-        }
-    }
-
-    header("Content-Type: application/json");
-    echo json_encode($items);
-}
-
-
-function customvarsearch_highlight($text, $term, $match)
-{
-    $safe = encode_form_val($text);
-    if ($term === '') {
-        return $safe;
-    }
-    if ($match == 'regex') {
-        $pattern = '/' . str_replace('/', '\/', $term) . '/i';
-        if (@preg_match($pattern, '') === false) {
-            return $safe;
-        }
-        // Wrap matches on the raw text, escaping everything else
-        $parts = preg_split($pattern, $text, -1, PREG_SPLIT_OFFSET_CAPTURE);
-        preg_match_all($pattern, $text, $m);
-        $html = '';
-        foreach ($parts as $i => $p) {
-            $html .= encode_form_val($p[0]);
-            if (isset($m[0][$i]) && $m[0][$i] !== '') {
-                $html .= '<mark>' . encode_form_val($m[0][$i]) . '</mark>';
-            }
-        }
-        return $html;
-    }
-    $pos = stripos($text, $term);
-    if ($pos === false || ($match == 'exact' && strcasecmp($text, $term) != 0)) {
-        return $safe;
-    }
-    return encode_form_val(substr($text, 0, $pos))
-        . '<mark>' . encode_form_val(substr($text, $pos, strlen($term))) . '</mark>'
-        . encode_form_val(substr($text, $pos + strlen($term)));
-}
-
-
+/**
+ * Render the search page: the form, then either an error, or the result count with
+ * CSV/JSON export links and the results table.
+ *
+ * All user- and database-supplied text is escaped with encode_form_val(), or
+ * customvarsearch_highlight() for highlighted cells. Host names link to the host's
+ * detail page; variable names link to its Custom Variables tab.
+ *
+ * @param string $term       Search text as entered
+ * @param string $field      'both', 'name' or 'value' (form state)
+ * @param string $match      'contains', 'exact' or 'regex' (form state)
+ * @param string $hostfilter Host name filter as entered
+ * @param bool   $searched   Whether a search was submitted (vs. the empty form)
+ * @param array  $search     Return value of customvarsearch_search()
+ * @return void              Outputs a full XI page
+ */
 function customvarsearch_show_page($term, $field, $match, $hostfilter, $searched, $search)
 {
     $state_class = array('UP' => 'cvs-up', 'DOWN' => 'cvs-down', 'UNREACHABLE' => 'cvs-unreach', 'PENDING' => 'cvs-pending', 'UNKNOWN' => 'cvs-pending');
@@ -207,6 +183,7 @@ function customvarsearch_show_page($term, $field, $match, $hostfilter, $searched
             $hl_value = ($field != 'name');
             foreach ($results as $r) {
                 $url = get_base_url() . "includes/components/xicore/status.php?show=hostdetail&host=" . urlencode($r['host_name']);
+                $varurl = customvarsearch_host_url($r['host_name']);
                 echo '<tr>';
                 echo '<td><a href="' . encode_form_val($url) . '">' . encode_form_val($r['host_name']) . '</a>';
                 if ($r['alias'] != '' && $r['alias'] != $r['host_name']) {
@@ -215,8 +192,8 @@ function customvarsearch_show_page($term, $field, $match, $hostfilter, $searched
                 echo '</td>';
                 echo '<td>' . encode_form_val($r['address']) . '</td>';
                 echo '<td><span class="cvs-state ' . $state_class[$r['state']] . '">' . encode_form_val($r['state']) . '</span></td>';
-                echo '<td class="cvs-var">_' . ($hl_name ? customvarsearch_highlight($r['varname'], $term, $match) : encode_form_val($r['varname'])) . '</td>';
-                echo '<td>' . ($hl_value ? customvarsearch_highlight($r['varvalue'], $term, $match) : encode_form_val($r['varvalue'])) . '</td>';
+                echo '<td class="cvs-var"><a href="' . encode_form_val($varurl) . '" title="' . encode_form_val(_("Show this host's custom variables")) . '">_' . ($hl_name ? customvarsearch_highlight($r['varname'], $term, $match) : encode_form_val($r['varname'])) . '</a></td>';
+                echo '<td>' . (($hl_value && !$r['masked']) ? customvarsearch_highlight($r['varvalue'], $term, $match) : encode_form_val($r['varvalue'])) . '</td>';
                 echo '</tr>';
             }
 ?>

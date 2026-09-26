@@ -1,0 +1,34 @@
+Custom Variable Search - Nagios XI component
+=============================================
+
+1.2.0 - 09/26/2026
+------------------
+- Global search results now open the host's Custom Variables tab instead of its
+  Overview tab (also the variable-name links on the search page)
+- Security: values of variables whose names look like secrets (PASS, PWD, SECRET, TOKEN,
+  APIKEY/API_KEY, COMMUNITY, PRIVATE, CREDENTIAL) are masked everywhere and can no longer
+  be matched by value searches
+- Security: CSV export neutralises spreadsheet formulas (=, +, -, @ prefixes)
+- Security: search text limited to 255 characters; array-valued request parameters ignored
+- Security: JSON and CSV responses send X-Content-Type-Options: nosniff
+- Global search hook only handles same-origin, asynchronous GET suggest requests
+- Fix: search-box result handlers could run twice
+- Fix: when core suggest.php failed, the search box showed only custom variable results
+  instead of XI's own error handling
+- Fix: an XMLHttpRequest reused after a suggest request kept stale response values
+- Fix: regex highlighting could drop text for patterns that match empty strings
+- Fix: valid regexes containing "\/" were reported as invalid
+- Fix: case-insensitive matching of non-ASCII text (e.g. "münchen" finds "MÜNCHEN")
+- Fix: invalid UTF-8 in a custom variable made JSON output empty
+- Full code documentation; PHP, JavaScript and live-XI test suites
+
+1.1.0 - 09/26/2026
+------------------
+- Custom variable matches in XI's global search box (Neptune Ctrl+K and classic navbar)
+- Neptune menu icon
+- Fix: invalid regular expressions crashed the page on PHP 8
+
+1.0.0 - 09/26/2026
+------------------
+- Initial release: search page (name/value, contains/exact/regex, host filter),
+  match highlighting, permission filtering, CSV and JSON export

@@ -1,61 +1,65 @@
 # Nagios XI – Custom Variable Search
 
-A Nagios XI component that lets you find hosts by their **custom variables**
-(`_SERIAL`, `_OWNER`, `_LOCATION`, `_VENDOR`, …) — something XI's built-in search can't do.
+A Nagios XI component that finds hosts by their **custom variables** (`_SERIAL`,
+`_OWNER`, `_LOCATION`, `_VENDOR`, …), from a search page or straight from XI's global
+search box. XI's built-in search only covers host and service names.
 
-![VAN-DC1 search](demo/13-location-van-dc1.png)
+![Global search box](demo/21-globalsearch-van-dc1.png)
 
-## Features
+Selecting a result opens that host's **Custom Variables** tab:
 
-- **Integrated with XI's global search box** ("Search Nagios XI" / Ctrl+K in Neptune, navbar
-  search in classic themes): matches show up as a **Custom Variables** group; clicking one opens
-  the host, and "See all …" opens the full search page
+![Custom Variables tab](demo/24-globalsearch-opens-customvars-tab.png)
 
-![Global search](demo/21-globalsearch-van-dc1.png)
+The full search page (*Home → Details → Custom Variable Search*):
 
-- **Home → Details → Custom Variable Search** menu entry (Neptune and classic themes)
-- Search the variable **name**, **value**, or **both**
-- Match modes: **contains**, **exact**, **regular expression** (all case-insensitive)
-- Optional **host name filter**
-- Matches highlighted; each host links to its XI host detail page, with live UP/DOWN status
-- **CSV** and **JSON** export of any search (`?format=csv` / `?format=json`)
-- **Respects XI permissions** – non-admin users only see hosts they are authorized for
-- Uses live runtime values (NDO `customvariablestatus`), including values inherited from templates
-- Invalid regexes and LIKE wildcards (`%`, `_`) are handled safely
+![Search page](demo/13-location-van-dc1.png)
+
+## Highlights
+
+- Results in XI's **global search box** (Neptune Ctrl+K and the classic navbar search)
+- Search page: name / value / both · contains / exact / regex · host filter · CSV & JSON export
+- Respects XI permissions; masks and protects secret-looking variables (`*PASS*`, `*TOKEN*`, `*COMMUNITY*`, …)
+- Includes template-inherited variables; no core XI files modified
+
+**User documentation** – installation, usage, the JSON endpoint and the security model –
+is in [`customvarsearch/README.md`](customvarsearch/README.md), which ships inside the
+component. Release notes: [`customvarsearch/CHANGES.txt`](customvarsearch/CHANGES.txt).
 
 ## Install
 
-1. Download `customvarsearch.zip`
-2. Nagios XI → **Admin → Manage Components → Upload a Component** → select the zip → Upload
+Download [`customvarsearch.zip`](customvarsearch.zip), then in Nagios XI:
+*Admin → Manage Components → Upload a Component*.
 
-Or copy the `customvarsearch/` directory to
-`/usr/local/nagiosxi/html/includes/components/` (owned by `nagios:nagios`).
+Tested on **Nagios XI 2026R2** / Ubuntu 24.04 / PHP 8.3 / MariaDB, Neptune and classic
+(Modern) themes.
 
-Tested on **Nagios XI 2026R2** on **Ubuntu 24.04** (PHP 8.3, MariaDB).
+## Repository layout
 
-## How the global search integration works
+| Path | Contents |
+|---|---|
+| `customvarsearch/` | The component (this directory is what the zip contains) |
+| `customvarsearch.zip` | Installable package |
+| `tests/` | PHP unit, JavaScript unit and live-XI integration tests – see [`tests/README.md`](tests/README.md) |
+| `docker/Dockerfile` | Ubuntu 24.04 + systemd base image for a Nagios XI lab |
+| `seed-demo-hosts.sh` | Creates the demo hosts and custom variables via the XI API |
+| `demo/` | Headless-browser demo scripts, screenshots and a video |
 
-XI has no component hook for its search box, and no core files are modified. Instead the component
-registers a `CALLBACK_PAGE_HEAD` script (`search-hook.js`) that wraps `XMLHttpRequest` in the top
-window: when the search box calls `suggest.php?type=multi`, the core results and this component's
-`?format=suggest` results are fetched in parallel and merged. If the component's endpoint fails,
-the core results are returned untouched.
+Build the zip from the repository root:
 
-**Neptune caveat:** the Neptune shell and its React home dashboard don't run
-`CALLBACK_PAGE_HEAD`, so the hook is installed the first time any classic XI page (Host Status,
-Service Status, CCM, reports, this component's page, …) loads in the session. Classic themes run it
-on every page.
-
-## JSON endpoint
-
-Uses the logged-in XI session:
-
-```
-/nagiosxi/includes/components/customvarsearch/index.php?q=^SN-R&field=value&match=regex&format=json
+```bash
+python3 -c "import shutil; shutil.make_archive('customvarsearch', 'zip', '.', 'customvarsearch')"
 ```
 
-Parameters: `q` (search text), `field` = `both|name|value`, `match` = `contains|exact|regex`,
-`host` (host name substring), `format` = `html|json|csv`.
+## Tests
+
+```bash
+php tests/php/run_tests.php                      # 30 PHP unit tests
+python3 tests/js/test_search_hook.py             # 19 browser tests of search-hook.js
+XI_URL=... XI_ADMIN_PASS=... XI_VIEWER_PASS=... XI_CLASSIC_PASS=... \
+    python3 tests/integration/test_live_xi.py    # 20 end-to-end tests on a live XI
+```
+
+See [`tests/README.md`](tests/README.md) for requirements and test data.
 
 ## Demo lab (Docker, Ubuntu 24.04)
 
@@ -71,15 +75,17 @@ docker exec nagiosxi bash -c 'cd /tmp && wget -q https://assets.nagios.com/downl
   && tar xzf xi-latest.tar.gz && cd nagiosxi && ./fullinstall -n'
 ```
 
-Then browse to `http://<host>:8080/nagiosxi/` and complete the 6-step setup wizard (requires
-registering a free Home Lab or trial license), upload the component, and seed demo hosts:
+Then browse to `http://<host>:8080/nagiosxi/`, complete the 6-step setup wizard (it
+requires registering a free Home Lab or trial license), upload the component, and create
+the demo hosts:
 
 ```bash
 XI_URL=http://localhost:8080 XI_KEY=<your api key> ./seed-demo-hosts.sh
 ```
 
-`demo/demo.py` and `demo/demo_search.py` are the headless Playwright script that produced the screenshots and
-`demo/customvarsearch-demo.webm` (`demo/xi.py` holds shared helpers).
+`demo/demo.py` (search page) and `demo/demo_search.py` (global search) are the headless
+Playwright scripts that produced the screenshots and `demo/customvarsearch-demo.webm`;
+`demo/xi.py` holds shared helpers and `demo/install.py` uploads the zip.
 
 ## Demo results
 
@@ -91,5 +97,5 @@ XI_URL=http://localhost:8080 XI_KEY=<your api key> ./seed-demo-hosts.sh
 | `contract` (variable name only) | fw-edge-01 `_SUPPORT_CONTRACT` |
 | `production` (exact) + host filter `prod` | db-prod-01, web-prod-01 |
 | `[unclosed` (regex) | "Invalid regular expression." |
-| `example.com` as **nagiosadmin** | all 4 hosts |
+| `example.com` as **nagiosadmin** | every host with an `_OWNER` |
 | `example.com` as limited user **viewer** | only web-prod-01 (the one host they're a contact for) |
