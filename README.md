@@ -7,6 +7,12 @@ A Nagios XI component that lets you find hosts by their **custom variables**
 
 ## Features
 
+- **Integrated with XI's global search box** ("Search Nagios XI" / Ctrl+K in Neptune, navbar
+  search in classic themes): matches show up as a **Custom Variables** group; clicking one opens
+  the host, and "See all …" opens the full search page
+
+![Global search](demo/21-globalsearch-van-dc1.png)
+
 - **Home → Details → Custom Variable Search** menu entry (Neptune and classic themes)
 - Search the variable **name**, **value**, or **both**
 - Match modes: **contains**, **exact**, **regular expression** (all case-insensitive)
@@ -26,6 +32,19 @@ Or copy the `customvarsearch/` directory to
 `/usr/local/nagiosxi/html/includes/components/` (owned by `nagios:nagios`).
 
 Tested on **Nagios XI 2026R2** on **Ubuntu 24.04** (PHP 8.3, MariaDB).
+
+## How the global search integration works
+
+XI has no component hook for its search box, and no core files are modified. Instead the component
+registers a `CALLBACK_PAGE_HEAD` script (`search-hook.js`) that wraps `XMLHttpRequest` in the top
+window: when the search box calls `suggest.php?type=multi`, the core results and this component's
+`?format=suggest` results are fetched in parallel and merged. If the component's endpoint fails,
+the core results are returned untouched.
+
+**Neptune caveat:** the Neptune shell and its React home dashboard don't run
+`CALLBACK_PAGE_HEAD`, so the hook is installed the first time any classic XI page (Host Status,
+Service Status, CCM, reports, this component's page, …) loads in the session. Classic themes run it
+on every page.
 
 ## JSON endpoint
 
@@ -59,8 +78,8 @@ registering a free Home Lab or trial license), upload the component, and seed de
 XI_URL=http://localhost:8080 XI_KEY=<your api key> ./seed-demo-hosts.sh
 ```
 
-`demo/demo.py` is the headless Playwright script that produced the screenshots and
-`demo/customvarsearch-demo.webm`.
+`demo/demo.py` and `demo/demo_search.py` are the headless Playwright script that produced the screenshots and
+`demo/customvarsearch-demo.webm` (`demo/xi.py` holds shared helpers).
 
 ## Demo results
 

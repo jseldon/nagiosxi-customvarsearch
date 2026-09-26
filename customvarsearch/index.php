@@ -16,6 +16,12 @@ check_prereqs();
 check_authentication(false);
 
 
+// Global search box integration (see search-hook.js) - same shape as XI's suggest.php
+if (grab_request_var("format", "") == "suggest") {
+    customvarsearch_suggest(trim(grab_request_var("term", "")));
+    exit();
+}
+
 $term = trim(grab_request_var("q", ""));
 $field = grab_request_var("field", "both");
 $match = grab_request_var("match", "contains");
@@ -49,6 +55,38 @@ switch ($format) {
 }
 
 customvarsearch_show_page($term, $field, $match, $hostfilter, $searched, $search);
+
+
+function customvarsearch_suggest($term)
+{
+    $max = 10;
+    $items = array();
+
+    if (strlen($term) >= 2) {
+        $search = customvarsearch_search($term);
+        $base = get_base_url(false);
+        foreach (array_slice($search['results'], 0, $max) as $r) {
+            $items[] = array(
+                'url'      => $base . "includes/components/xicore/status.php?show=hostdetail&host=" . urlencode($r['host_name']),
+                // Neptune's command palette filters on 'value', so it must contain the term
+                'value'    => $r['host_name'] . " _" . $r['varname'] . " " . $r['varvalue'],
+                'label'    => $r['host_name'] . " \xE2\x80\x94 _" . $r['varname'] . " = " . $r['varvalue'],
+                'category' => _("Custom Variables"),
+            );
+        }
+        if (count($search['results']) > 0) {
+            $items[] = array(
+                'url'      => $base . "includes/components/customvarsearch/index.php?q=" . urlencode($term),
+                'value'    => $term . " custom variable search",
+                'label'    => sprintf(_("See all %d custom variable matches for \"%s\""), count($search['results']), $term),
+                'category' => _("Custom Variables"),
+            );
+        }
+    }
+
+    header("Content-Type: application/json");
+    echo json_encode($items);
+}
 
 
 function customvarsearch_highlight($text, $term, $match)

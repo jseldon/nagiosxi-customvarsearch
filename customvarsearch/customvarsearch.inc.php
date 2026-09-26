@@ -19,12 +19,25 @@ function customvarsearch_component_init()
         COMPONENT_AUTHOR      => "jseldon",
         COMPONENT_DESCRIPTION => _("Search hosts by the names and values of their custom variables."),
         COMPONENT_TITLE       => _("Custom Variable Search"),
-        COMPONENT_VERSION     => "1.0.0",
+        COMPONENT_VERSION     => "1.1.0",
         COMPONENT_DATE        => "09/26/2026",
     );
 
     register_component($customvarsearch_component_name, $args);
     register_callback(CALLBACK_MENUS_INITIALIZED, 'customvarsearch_component_addmenu');
+    register_callback(CALLBACK_PAGE_HEAD, 'customvarsearch_component_head');
+}
+
+
+// Hook XI's global search box (Neptune Ctrl+K and classic navbar). The Neptune shell
+// doesn't run this callback, so the script is loaded by child pages and re-injects
+// itself into the top-level window, where the search box lives.
+function customvarsearch_component_head($cbtype, $args)
+{
+    global $customvarsearch_component_name;
+
+    $base = get_component_url_base($customvarsearch_component_name, false);
+    echo '<script type="text/javascript" src="' . encode_form_val($base . '/search-hook.js?v=1.1.0') . '" data-cvs-endpoint="' . encode_form_val($base . '/index.php') . '"></script>' . "\n";
 }
 
 
