@@ -4,7 +4,8 @@ Find hosts by their **custom variables** – `_SERIAL`, `_OWNER`, `_LOCATION`, `
 `_RACK`, or anything else you track – from a dedicated search page or straight from XI's
 global search box. XI's built-in search only covers host and service names.
 
-**Version:** 1.2.0 · **Author:** James Seldon · **License:** MIT
+**Version:** 1.2.0 · **Author:** James Seldon · **License:** MIT ·
+**Source & issues:** https://github.com/jseldon/nagiosxi-customvarsearch
 
 **Requires:** Nagios XI **2026R2** or later · **Tested on:** XI 2026R2 (Ubuntu 24.04,
 PHP 8.3, MariaDB), Neptune and classic themes. On older XI versions the component
@@ -31,8 +32,9 @@ installs but stays inactive.
 
 ## Installation
 
-1. *Admin → Manage Components → Upload a Component*
-2. Choose `customvarsearch.zip` and click **Upload**
+1. Download `customvarsearch.zip` from the [latest release](https://github.com/jseldon/nagiosxi-customvarsearch/releases/latest)
+2. *Admin → Manage Components → Upload a Component*
+3. Choose `customvarsearch.zip` and click **Upload**
 
 Or copy the `customvarsearch/` directory to
 `/usr/local/nagiosxi/html/includes/components/` (owned by `nagios:nagios`).

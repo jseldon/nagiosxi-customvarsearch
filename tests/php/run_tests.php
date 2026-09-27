@@ -49,6 +49,7 @@ test('registers component, menu and page-head callbacks', function () {
     eq('James Seldon', $reg[0][2][COMPONENT_AUTHOR]);
     eq('MIT', $reg[0][2][COMPONENT_LICENSE]);
     eq(90000, $reg[0][2][COMPONENT_REQUIRES_VERSION], 'requires 2026R2');
+    eq('https://github.com/jseldon/nagiosxi-customvarsearch', $reg[0][2][COMPONENT_HOMEPAGE]);
     ok(in_array(array('callback', CALLBACK_MENUS_INITIALIZED, 'customvarsearch_component_addmenu'), $reg, true), 'menu callback');
     ok(in_array(array('callback', CALLBACK_PAGE_HEAD, 'customvarsearch_component_head'), $reg, true), 'page head callback');
 });

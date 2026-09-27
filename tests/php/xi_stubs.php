@@ -18,6 +18,7 @@ define("COMPONENT_DATE", "date");
 define("COMPONENT_COPYRIGHT", "copyright");
 define("COMPONENT_LICENSE", "license");
 define("COMPONENT_REQUIRES_VERSION", "requires_version");
+define("COMPONENT_HOMEPAGE", "homepage");
 define("CALLBACK_MENUS_INITIALIZED", "menus_initialized");
 define("CALLBACK_PAGE_HEAD", "page_head");
 define("MENU_HOME", "home");

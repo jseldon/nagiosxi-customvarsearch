@@ -30,6 +30,7 @@
  * @author    James Seldon
  * @copyright 2026 James Seldon
  * @license   MIT (see LICENSE)
+ * @link      https://github.com/jseldon/nagiosxi-customvarsearch
  * @requires  Nagios XI 2026R2 or later (tested on 2026R2, PHP 8.3, MariaDB)
  */
 
@@ -100,6 +101,7 @@ function customvarsearch_component_init()
         COMPONENT_AUTHOR      => "James Seldon",
         COMPONENT_COPYRIGHT   => "Copyright (c) 2026 James Seldon",
         COMPONENT_LICENSE     => "MIT",
+        COMPONENT_HOMEPAGE    => "https://github.com/jseldon/nagiosxi-customvarsearch",
         COMPONENT_DESCRIPTION => _("Search hosts by the names and values of their custom variables, from a dedicated page or XI's global search box."),
         COMPONENT_TITLE       => _("Custom Variable Search"),
         COMPONENT_VERSION     => "1.2.0",

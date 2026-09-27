@@ -27,8 +27,8 @@ component. Release notes: [`customvarsearch/CHANGES.txt`](customvarsearch/CHANGE
 
 ## Install
 
-Download [`customvarsearch.zip`](customvarsearch.zip), then in Nagios XI:
-*Admin → Manage Components → Upload a Component*.
+Download `customvarsearch.zip` from the [latest release](https://github.com/jseldon/nagiosxi-customvarsearch/releases/latest), then in
+Nagios XI: *Admin → Manage Components → Upload a Component*.
 
 Requires **Nagios XI 2026R2** or later. Tested on 2026R2 / Ubuntu 24.04 / PHP 8.3 /
 MariaDB, Neptune and classic (Modern) themes.
